@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Inicio de Sesión</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="estilos.css">
+    </head>
+    <body>
+        <div class="login-container">
+            <h2>Iniciar Sesión</h2>
+            <div class="error" id="error">Usuario o contraseña incorrectos</div>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Usuario" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <div id="mensaje"></div>
+            
+        </div>
+        
+        <script src="login.js"></script>
+    </body>
+</html>
