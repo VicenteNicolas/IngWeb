@@ -8,6 +8,12 @@ form.addEventListener('submit', async (e) => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
+    if(!username || !password){
+        errorDiv.textContent='Debes completar todos los campos';
+        mensajeDiv.textContent='';
+        return;
+    }
+
     try {
         const res = await fetch('/register', {
             method: 'POST',
@@ -18,8 +24,14 @@ form.addEventListener('submit', async (e) => {
         const data = await res.json();
 
         if(data.success){
-            mensajeDiv.textContent = 'Usuario registrado exitosamente. Ahora puedes iniciar sesión.';
+            mensajeDiv.textContent = 'Usuario registrado exitosamente. Ahora puedes iniciar sesión.\n';
             errorDiv.textContent = '';
+            form.reset();
+
+            setTimeout(() => {
+                window.location.href ='/';
+            },2000);
+
         } else {
             errorDiv.textContent = data.message || 'Error al registrar';
             mensajeDiv.textContent = '';
