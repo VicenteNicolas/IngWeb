@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Admin</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h2>Panel de Administración</h2>
+
+        <div id="message" class="message"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="userTable">
+                <!-- Los usuarios se cargarán aquí mediante JS -->
+            </tbody>
+        </table>
+
+        <div style="text-align: center;">
+            <a href="/logout" style="text-decoration: none; color: #3498db; font-weight: bold;">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

@@ -25,6 +25,19 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 } // 1 minuto en milisegundos
 }));
 
+//Conexión eliminar
+const dbAdmin =mysql.createConnection({
+    host:process.env.DB_HOST,
+    user:process.env.DB_ADMIN_USER,
+    password: process.env.DB_ADMIN_PASSWORD,
+    database:process.env.DB_NAME
+});
+
+dbAdmin.connect(err => {
+    if(err) throw err;
+    console.log('Conectado a MySQL como admin');
+});
+
 // Conexión solo lectura
 const dbReader = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -35,7 +48,7 @@ const dbReader = mysql.createConnection({
 
 dbReader.connect(err => {
     if(err) throw err;
-    console.log('Conectado a la base de datos MySQL');
+    console.log('Conectado a MySQL como lector');
 });
 
 
@@ -101,13 +114,43 @@ app.post('/login', (req,res)=> {
         const match= await bcrypt.compare(password,user.password);
 
         if(match){
-            req.session.user = username; //Guardar 
-            res.json({success:true,message:'Login exitoso'});
+            req.session.user = {
+                username: username,
+                role:user.role
+            }; 
+            res.json({success:true,message:'Login exitoso',role:user.role});
 
         } else {
-            res.json({success:false,messgae:'Contraseña incorrecta'});
+            res.json({success:false,message:'Contraseña incorrecta'});
         }
 
+    });
+});
+
+// Solo admins pueden acceder
+function adminMiddleware(req, res, next) {
+    if(req.session.user && req.session.user.role === 'admin'){
+        next();
+    } else {
+        res.status(403).send('Acceso denegado');
+    }
+}
+
+// Obtener todos los usuarios
+app.get('/admin/users', adminMiddleware, (req, res) => {
+    dbReader.query('SELECT username, role FROM usuarios', (err, results) => {
+        if(err) return res.status(500).json({success:false, message:'Error interno'});
+        res.json({success:true, users: results});
+    });
+});
+
+// Eliminar un usuario
+app.delete('/admin/delete/:username', adminMiddleware, (req, res) => {
+    const { username } = req.params;
+    if(username === 'admin') return res.json({success:false,message:'No puedes eliminar al admin'});
+    dbAdmin.query('DELETE FROM usuarios WHERE username = ?', [username], (err) => {
+        if(err) return res.status(500).json({success:false,message:'Error al eliminar usuario'});
+        res.json({success:true});
     });
 });
 
@@ -115,7 +158,7 @@ app.post('/login', (req,res)=> {
 // Middleware para proteger rutas
 function authMiddleware(req, res, next){
     if(req.session.user){
-        next(); // Usuario logueado
+        next(); 
     } else {
         res.redirect('/'); 
     }
@@ -126,6 +169,11 @@ function noCache(req, res, next) {
     next();
 }
 
+
+// Proteger ruta admin.html
+app.get('/admin', adminMiddleware, noCache, (req, res) => {
+    res.sendFile(path.join(__dirname,'private','admin.html'));
+});
 
 // Proteger inicio
 app.get('/inicio', authMiddleware, noCache,(req, res) => {

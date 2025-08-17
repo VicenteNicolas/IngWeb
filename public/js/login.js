@@ -17,9 +17,14 @@ form.addEventListener('submit',function(e) {
     .then(res=> res.json())
     .then(data=> {
         if(data.success){
-            window.location.href="/inicio";
+            if(data.role==='admin'){
+                window.location.href = '/admin';
+            } else{
+                window.location.href="/inicio";
+            }
         } else {
             errorDiv.style.display="block";
+            errorDiv.textContent=data.message;
         }
     });
 });
