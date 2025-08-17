@@ -66,6 +66,9 @@ app.post('/register', async (req,res) => {
         dbWriter.query('INSERT INTO usuarios (username, password) VALUES (?,?)',[username,hashedPassword], (err,results) => {
             if(err){
                 console.error(err);
+                if(err.code === 'ER_DUP_ENTRY'){
+                    return res.json({success:false,message:'El usuario ya existe'});
+                }
                 return res.status(500).json({success:false, message:'Error al registrar'});
             }
             res.json({success:true,message:'Usuario registrado'});
