@@ -2,12 +2,15 @@ require('dotenv').config(); // debe ir al inicio
 
 console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '*****' : 'No cargada');
+console.log('DB_WRITER_USER:', process.env.DB_WRITER_USER);
+console.log('DB_WRITER_PASSWORD:', process.env.DB_WRITER_PASSWORD ? '*****' : 'No cargada');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 const path = require('path');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,50 +18,103 @@ app.use(express.static('public'));
 
 // Configurar sesiones
 app.use(session({
-    secret: 'vicente01', // cambia por algo más seguro en producción
+    secret: process.env.SESSION_SECRET, 
     resave: false,
     saveUninitialized: false,
     rolling: true,
     cookie: { maxAge: 1000 * 60 } // 1 minuto en milisegundos
 }));
 
-// Conexión a MySQL
-const db = mysql.createConnection({
+// Conexión solo lectura
+const dbReader = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 });
 
-db.connect(err => {
+dbReader.connect(err => {
     if(err) throw err;
     console.log('Conectado a la base de datos MySQL');
 });
 
-// Ruta de login
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    db.query(
-        'SELECT * FROM usuarios WHERE username = ? AND password = ?',
-        [username, password],
-        (err, results) => {
-            if(err) throw err;
-            if(results.length > 0){
-                req.session.user = username; // Guardar en sesión
-                res.json({ success: true });
-            } else {
-                res.json({ success: false });
-            }
-        }
-    );
+
+//Conexión escritura
+const dbWriter = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_WRITER_USER,
+    password: process.env.DB_WRITER_PASSWORD,
+    database: process.env.DB_NAME
 });
+
+dbWriter.connect(err=> {
+    if(err) throw err;
+    console.log('Conectado a MYSQL como escritor');
+});
+
+// Registro
+app.post('/register', async (req,res) => {
+    const {username,password} = req.body;
+
+    if(!username || !password) return res.status(400).json({success:false,message:'Faltan datos'});
+
+    try{
+        const saltRounds = 10;
+        const hashedPassword= await bcrypt.hash(password,saltRounds);
+
+        //Guardar
+        dbWriter.query('INSERT INTO usuarios (username, password) VALUES (?,?)',[username,hashedPassword], (err,results) => {
+            if(err){
+                console.error(err);
+                return res.status(500).json({success:false, message:'Error al registrar'});
+            }
+            res.json({success:true,message:'Usuario registrado'});
+        });
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({success:false,message:'Error interno'});
+    }
+});
+
+
+
+// login de usuarios
+app.post('/login', (req,res)=> {
+    const {username, password } = req.body;
+
+    if(!username || !password) return res.status(400).json({success:false,message:'Faltan datos'});
+
+    dbReader.query('SELECT * FROM usuarios WHERE username= ?', [username], async (err,results)=> {
+        if(err){
+            console.error(err);
+            return res.status(500).json({success:false,message:'Error interno'});
+        }
+
+        if(results.length===0) return res.json({success:false,message:'Usuario no existe'});
+
+        const user = results[0];
+
+        //Comparar la contraseña con el hash
+        const match= await bcrypt.compare(password,user.password);
+
+        if(match){
+            req.session.user = username; //Guardar 
+            res.json({success:true,message:'Login exitoso'});
+
+        } else {
+            res.json({success:false,messgae:'Contraseña incorrecta'});
+        }
+
+    });
+});
+
 
 // Middleware para proteger rutas
 function authMiddleware(req, res, next){
     if(req.session.user){
         next(); // Usuario logueado
     } else {
-        res.redirect('/'); // Redirige al login
+        res.redirect('/'); 
     }
 }
 
