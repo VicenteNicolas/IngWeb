@@ -11,6 +11,8 @@
 
         <div id="message" class="message"></div>
 
+        <!-- Usuarios Activos -->
+        <h3>Usuarios Activos</h3>
         <table>
             <thead>
                 <tr>
@@ -19,12 +21,27 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="userTable">
-                <!-- Los usuarios se cargarán aquí mediante JS -->
+            <tbody id="activeUsers">
+                <!-- Usuarios activos se cargarán mediante JS -->
             </tbody>
         </table>
 
-        <div style="text-align: center;">
+        <!-- Usuarios Desactivados -->
+        <h3>Usuarios Desactivados</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="inactiveUsers">
+                <!-- Usuarios desactivados se cargarán mediante JS -->
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 20px;">
             <a href="/logout" style="text-decoration: none; color: #3498db; font-weight: bold;">Cerrar sesión</a>
         </div>
     </div>

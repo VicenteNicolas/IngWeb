@@ -1,4 +1,4 @@
-/* Reset básico */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -67,6 +67,38 @@ tr:hover {
     color: #27ae60;
 }
 
+/*Botones*/
+button.activate-btn {
+    background-color: #2ecc71; /* verde */
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-right: 8px; /* espacio entre botones */
+}
+
+button.activate-btn:hover {
+    background-color: #27ae60;
+}
+
+button.deactivate-btn {
+    background-color: #e67e22; /* naranja */
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-right: 8px; /* espacio entre botones */
+}
+
+button.deactivate-btn:hover {
+    background-color: #d35400;
+}
+
+
 button.delete-btn {
     background-color: #e74c3c;
     border: none;
@@ -75,11 +107,15 @@ button.delete-btn {
     border-radius: 5px;
     cursor: pointer;
     transition: background 0.3s;
+    margin-right: 8px; /* espacio entre botones */
+
 }
 
 button.delete-btn:hover {
     background-color: #c0392b;
 }
+
+
 
 .message {
     text-align: center;
@@ -106,6 +142,8 @@ button.delete-btn:hover {
         font-size: 12px;
     }
 
+    button.activate-btn,
+    button.deactivate-btn,
     button.delete-btn {
         padding: 4px 8px;
         font-size: 12px;
